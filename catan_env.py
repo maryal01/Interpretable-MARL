@@ -4,7 +4,7 @@ Every player at the table is an agent you train. All players sit in one TorchRL
 group, "agents", so ``MultiAgentMLP(share_params=True/False)`` switches between
 one shared network (self-play) and an independent network per player.
 
-    env = CatanEnv(CatanConfig(num_players=4, map_type="MINI", vps_to_win=6), seed=0)
+    env = CatanEnv(CatanConfig(num_players=4, map_type="BASE", vps_to_win=8), seed=0)
     td = env.reset()
 
 Keys (n players, A actions, D observation size):
