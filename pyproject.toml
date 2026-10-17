@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "catan-marl"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "torch>=2.1",
+    "torchrl==0.14.1",      # upgrade torchrl and tensordict together
+    "tensordict==0.14.3",
+    "gymnasium>=1.0",       # imported by catanatron's action-list helper
+    "numpy",
+    # Catan engine pinned to a tested commit (the PyPI release is from 2022).
+    # Don't use the [gym] extra: it pins an old gymnasium and pulls in pandas/pygame.
+    "catanatron @ git+https://github.com/bcollazo/catanatron.git@ecf931181b9a65bb4116a2153fb78c16f1438e00",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools]
+py-modules = ["catan_env", "evaluate"]
+
+[tool.pytest.ini_options]
+filterwarnings = ["ignore::DeprecationWarning", "ignore::UserWarning", "ignore::FutureWarning"]
