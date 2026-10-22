@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from typing import Callable, Optional, Sequence
 
 import numpy as np
-
+import argparse
 from catanatron.models.player import Player, RandomPlayer
 from catanatron.players.minimax import AlphaBetaPlayer
 from catanatron.players.search import VictoryPointPlayer
@@ -34,11 +34,9 @@ BOTS = {
     "alphabeta": AlphaBetaPlayer,
 }
 
-
 def random_policy(seed: Optional[int] = None) -> Policy:
     rng = np.random.default_rng(seed)
     return lambda obs, mask: int(rng.choice(np.flatnonzero(mask)))
-
 
 class PolicyPlayer(Player):
     """Lets Catanatron drive a game while a Policy makes this seat's decisions."""
@@ -54,7 +52,6 @@ class PolicyPlayer(Player):
         if action not in playable_actions:
             raise IllegalActionError(f"policy chose {action}, which is not legal")
         return action
-
 
 @dataclass
 class MatchResult:
@@ -79,7 +76,6 @@ class MatchResult:
                          f"{r['clear_leader_steals']:>9}{r['steals_from_leader']:>13}{r['chance_from_leader']:>11.1f}")
         lines.append("* steals made while one opponent clearly led; 'by chance' = expected if stealing at random")
         return "\n".join(lines)
-
 
 def play_match(seats: Sequence, n_games: int = 100, config: CatanConfig = CatanConfig(),
                seed: int = 0, labels: Optional[Sequence[str]] = None) -> MatchResult:
@@ -116,10 +112,7 @@ def play_match(seats: Sequence, n_games: int = 100, config: CatanConfig = CatanC
 
     return MatchResult(labels, n_games, wins, truncated, float(np.mean(turns)), final_vps / n_games, robber)
 
-
 if __name__ == "__main__":
-    import argparse
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--opponents", nargs="+", default=["random", "random", "random"], choices=sorted(BOTS))
     parser.add_argument("--games", type=int, default=100)
