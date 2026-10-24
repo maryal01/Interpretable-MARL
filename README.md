@@ -31,4 +31,7 @@ td[ACTION_MASK].shape  # [4, 208]  legal moves
 td[ACTIVE]             # whose turn it is
 ```
 
+```
+python runeval.py checkpoints/iter_0049.pt --games 100
+```
 Catanatron is GPL-3.0: if this repo is public, license it GPL-3.0 too.

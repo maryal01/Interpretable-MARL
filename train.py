@@ -38,7 +38,11 @@ def train():
 
     # Sampling
     frames_per_batch = 6_000  # Number of team frames collected per training iteration
+<<<<<<< HEAD
     n_iters = 500  # Number of sampling and training iterations
+=======
+    n_iters = 200  # Number of sampling and training iterations
+>>>>>>> 9848a9e4086686f3ba604675d2cda0219896f088
     total_frames = frames_per_batch * n_iters
 
     # Training
@@ -101,7 +105,7 @@ def train():
         return_log_prob=True,
     )
     
-    share_parameters_critic = False
+    share_parameters_critic = True
     mappo = False  # IPPO if False
 
     critic_net = MultiAgentMLP(
@@ -154,6 +158,7 @@ def train():
         done=("agents", "done"),
         terminated=("agents", "terminated"),
     )
+    loss_module.loss_mask_key = ("agents", "mask")
 
     loss_module.make_value_estimator(
         ValueEstimators.GAE, gamma=gamma, lmbda=lmbda
@@ -162,9 +167,19 @@ def train():
     GAE = loss_module.value_estimator
     optim = torch.optim.Adam(loss_module.parameters(), lr)
 
-    pbar = tqdm(total=n_iters, desc="episode_reward_mean = 0")
+    pbar = tqdm(total=n_iters)
 
-    episode_reward_mean_list = []
+    if not os.path.exists('checkpoints'):
+      os.makedirs('checkpoints')
+    torch.save(
+        {
+            "iteration": -1,
+            "policy": policy_net.state_dict(),
+            "critic": critic_net.state_dict(),
+            "optimizer": optim.state_dict(),
+        }, 
+        f"checkpoints/iter_before_training.pt")
+    
     for i_episode, tensordict_data in enumerate(collector):
         with torch.no_grad():
             GAE(
@@ -193,24 +208,14 @@ def train():
 
         collector.update_policy_weights_()
 
-        # Logging
-        done = tensordict_data.get(("next", "agents", "done"))
-        episode_reward_mean = tensordict_data.get(("next", "agents", "episode_reward"))[done].mean().item()
-        episode_reward_mean_list.append(episode_reward_mean)
-
         # Save the model
-        if i_episode % save_interval == 0:
-            if not os.path.exists('checkpoints'):
-                os.makedirs('checkpoints')
-            
+        if i_episode % save_interval == 0 or i_episode == n_iters - 1:            
             torch.save({
                 "iteration": i_episode,
                 "policy": policy_net.state_dict(),
                 "critic": critic_net.state_dict(),
                 "optimizer": optim.state_dict(),
             }, f"checkpoints/iter_{i_episode:04d}.pt")
-
-        pbar.set_description(f"episode_reward_mean = {episode_reward_mean}", refresh=False)
         pbar.update()
 
 if __name__ == "__main__":

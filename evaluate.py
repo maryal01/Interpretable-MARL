@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Callable, Optional, Sequence
-
+import torch
 import numpy as np
 import argparse
 from catanatron.models.player import Player, RandomPlayer
@@ -111,6 +111,18 @@ def play_match(seats: Sequence, n_games: int = 100, config: CatanConfig = CatanC
                 robber[i][k] += v
 
     return MatchResult(labels, n_games, wins, truncated, float(np.mean(turns)), final_vps / n_games, robber)
+
+def make_policy(policy_net, seat, n_agents, deterministic=True):
+    def policy(obs, mask):
+        x = torch.zeros(n_agents, obs.shape[0])
+        x[seat] = torch.as_tensor(obs)
+        with torch.no_grad():
+            logits = policy_net(x)[seat]
+        logits = logits.masked_fill(~torch.as_tensor(mask), float("-inf"))
+        if deterministic:
+            return int(logits.argmax())
+        return int(torch.distributions.Categorical(logits=logits).sample())
+    return policy
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
