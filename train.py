@@ -38,7 +38,7 @@ def train():
 
     # Sampling
     frames_per_batch = 6_000  # Number of team frames collected per training iteration
-    n_iters = 50  # Number of sampling and training iterations
+    n_iters = 500  # Number of sampling and training iterations
     total_frames = frames_per_batch * n_iters
 
     # Training
